@@ -29,16 +29,23 @@ It's all in good fun!
 INSTALLATION:
 ----------
 
+%> bash <(curl -s http://moya.6thcolumn.org/resources/bash/ezsetup)
+
+OR
+
 %> cd ~/
-%> git clone https://github.com/gavinmbell/bash_resources ~/.bash_resources
+%> git clone git://github.com/gavinmbell/bash_resources.git ~/.bash_resources
 %> cd .bash_resources
 %> ./setup
 %> source ~/.bashrc
 
+Then...
 Type:
 %> src
 
 (smile)
+
+Both ezsetup and setup have options that are described via --help | -h
 
 Once you have this installed, you may put an additional customizations in file:
 

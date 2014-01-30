@@ -43,7 +43,7 @@ export BASH_COMPLETION=${HOME:-~}/.bash_completion >& /dev/null
 export BASH_COMPLETION_DIR=${HOME:-~}/.bash_completion.d >& /dev/null
 source $BASH_COMPLETION >& /dev/null
 source $BASH_COMPLETION_DIR/* >& /dev/null
-export PATH=.:~/bin:/usr/local/bin:/usr/local/sbin:/usr/local/git/bin:/sw/bin:/bin:/usr/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/texbin
+export PATH=.:~/bin:/usr/local/bin:/usr/local/sbin:/usr/local/git/bin:/bin:/usr/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/texbin:/sw/bin
 
 export LANG="C"
 export EDITOR='emacs'
@@ -134,7 +134,7 @@ PROMPT_SHOW_FULL_PATH=
 
 source ${HOME:-~}/.bash_aliases
 source ${HOME:-~}/.bash_functions
-source ${HOME:-~}/.git_bashrc
+source ${HOME:-~}/.bash_git
 
 __local_bash_rc=${HOME:-~}/.bash_local
 [ -e ${__local_bash_rc} ] && source ${__local_bash_rc}

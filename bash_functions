@@ -18,23 +18,69 @@
 #*****************************************************************
 
 #-------------
+# (private) Utility functions...
+#-------------
+
+_readlinkf() {
+    # This is a portable implementation of GNU's "readlink -f" in
+    # bash/zsh, following symlinks recursively until they end in a
+    # file, and will print the full dereferenced path of the specified
+    # file even if the file isn't a symlink.
+    #
+    # Loop detection exists, but only as an abort after passing a
+    # maximum length.
+
+    local start_dir=$(pwd)
+    local file=${1}
+    cd $(dirname ${file})
+    file=$(basename ${file})
+
+    # Iterate down symlinks.  If we exceed a maximum number symlinks, assume that
+    # we're looped and die horribly.
+    local maxlinks=20
+    local count=0
+    local current_dir
+    while [ -L "${file}" ] ; do
+        file=$(readlink ${file})
+        cd $(dirname ${file})
+        file=$(basename ${file})
+        ((count++))
+        if (( count > maxlinks )) ; then
+            current_dir=$(pwd -P)
+            echo "CRITICAL FAILURE[4]: symlink loop detected on ${current_dir}/${file}"
+            cd ${start_dir}
+            return ${count}
+        fi
+    done
+    current_dir=$(pwd -P)
+    echo "${current_dir}/${file}"
+    cd ${start_dir}
+}
+
+#-------------
 # Shell welcome banner...
 #-------------
 show_hostname() {
     local font=${1:-"doom"}
     local namefile=${BASH_CACHE_DIR}/bash_banner_${BANNER_FONT}.txt
+    local _hostname=$(hostname -s)
     #the file must be there and must have some content
-    if [ -e "${namefile}" ] && (( $(\ls -l ${namefile} | awk '{print $5}') > 0 )) ; then
+    if [ -e "${namefile}" ] && (( $(\ls -l ${namefile} | awk '{print $5}') > 0 ))  && [ "$(sed -n '1p' ${namefile})" = "${_hostname}" ] ; then
         : /dev/null
     else
         #make a call to get ascii art via the ascii_grab.py program which contacts and scrapes...
         #http://www.network-science.de/ascii/ascii.php?TEXT=malcolm&x=32&y=13&FONT=doom&RICH=no&FORM=left&STRE=no&WIDT=80
         #for ascii art output
+        #Just keeping this here as a reference, cause it was kinda cool... (used to execute the python loaded remotely)
+        #local d="$(python <( curl -m 2 -s http://moya.6thcolumn.org/resources/bash/ascii_grab.py) ${font} ${_hostname})"
+        local abs_path_bashrc=$(_readlinkf ${HOME}/.bashrc)
+        local bash_resources_tld=${abs_path_bashrc%/*}
+        [ ! -e "${bash_resources_tld}/tools/ascii_grab.py" ] && return 0
         echo "(font: ${font})"
-        local d="$(python <( curl -m 2 -s http://moya.6thcolumn.org/misc/ascii_grab.py) ${font} $(hostname -s))"
-        [ -n "${d}" ] && echo "${d}" > ${namefile} && chmod 666 ${namefile}
+        local d="$(python ${bash_resources_tld}/tools/ascii_grab.py ${font} ${_hostname})"
+        [ -n "${d}" ] && printf "${_hostname}\n${d}\n" > ${namefile} && chmod 666 ${namefile}
     fi
-    cat ${namefile} 2> /dev/null
+    sed '1d' ${namefile} 2> /dev/null
 }
 
 show_welcome() {
@@ -43,7 +89,7 @@ show_welcome() {
     echo "You are logged into a ${_os} Machine...(Version `uname -r`)"
     [ "${_os}" == "Darwin" ] && sw_vers
     echo " Host => `hostname -f`"
-    show_hostname ${BANNER_FONT:-"doom"}
+    [[ ! ${HOSTNAME_BANNER_OFF} ]] && show_hostname ${BANNER_FONT:-"doom"}
     echo
     echo " Hardware: `uname -m`...."
     echo " Using Emacs Bindings..."
@@ -233,46 +279,6 @@ find_in_code() {
 }
 
 #-------------
-# (private) Utility functions...
-#-------------
-
-_readlinkf() {
-    # This is a portable implementation of GNU's "readlink -f" in
-    # bash/zsh, following symlinks recursively until they end in a
-    # file, and will print the full dereferenced path of the specified
-    # file even if the file isn't a symlink.
-    #
-    # Loop detection exists, but only as an abort after passing a
-    # maximum length.
-
-    local start_dir=$(pwd)
-    local file=${1}
-    cd $(dirname ${file})
-    file=$(basename ${file})
-
-    # Iterate down symlinks.  If we exceed a maximum number symlinks, assume that
-    # we're looped and die horribly.
-    local maxlinks=20
-    local count=0
-    local current_dir
-    while [ -L "${file}" ] ; do
-        file=$(readlink ${file})
-        cd $(dirname ${file})
-        file=$(basename ${file})
-        ((count++))
-        if (( count > maxlinks )) ; then
-            current_dir=$(pwd -P)
-            echo "CRITICAL FAILURE[4]: symlink loop detected on ${current_dir}/${file}"
-            cd ${start_dir}
-            return ${count}
-        fi
-    done
-    current_dir=$(pwd -P)
-    echo "${current_dir}/${file}"
-    cd ${start_dir}
-}
-
-#-------------
 # Self updating...
 #-------------
 
@@ -288,9 +294,10 @@ check_for_bash_resources_update() {
         echo "Sorry, could not enter \"${bash_resources_dir}\" :-(" && popd >& /dev/null
         return 2
     fi
-    echo "Querying for updates..." && git fetch 2> /dev/null
+    echo "Querying for updates..." && git fetch >& /dev/null
+    [ $? != 0 ] && echo "ERROR: Could not perform fetch from repo!!! (hint: check network connectivity and try again)" && return 99
 
-    local distance=$(source ${bash_resources_dir}/.git_bashrc && __git_remote_dist)
+    local distance=$(source ${bash_resources_dir}/bash_git && __git_remote_dist)
     if [ $? != 0 ]; then
         echo "Sorry, problem getting distance metric... :-(" && popd >& /dev/null 
         return 0
