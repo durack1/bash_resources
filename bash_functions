@@ -347,3 +347,13 @@ mvfileset() {
 	mv -v ${infile} ${outfile}
     done
 }
+
+# pushd if there's nothing on the stack or there's an arg
+# popd otherwise
+pd() {
+    if [ "$#" -ne 1 ]; then
+      popd
+    else
+      pushd $1
+    fi
+}
