@@ -17,8 +17,8 @@
 #   We use lots of different machines... it makes it less painful
 #
 #*****************************************************************
-
 [ -z "$PS1" ] && return
+
 
 shopt -s extglob
 shopt -s dotglob
@@ -61,46 +61,9 @@ export LS_COLORS="no=00:fi=00:di=33:ln=00;36:pi=40;33:so=00;35:bd=40;33;00:cd=40
 #-----
 
 export GREP_OPTIONS='--color=auto' 
-export GREP_COLOR='01;36;*'
+export GREP_COLORS='01;36;*'
 
-export TEMP="/tmp/`whoami`"
-export TMP=${TEMP}
-mkdir -p ${TEMP}
-
-export PROJECT=${HOME}/projects
-export DEVTOOLS=${HOME}/devtools
-
-export CDPATH=.:..:$HOME/:$PROJECT/
-
-export ESGF_SITE_ROOT=$PROJECT/esgf-site
-
-#System-wide resources....
-export JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home
-export ANT_HOME=/usr/share/ant
-export M2_HOME=/usr/local/maven
-
-#Account scope resources
-export CATALINA_HOME=$DEVTOOLS/tomcat
-export TOMCAT_HOME=$CATALINA_HOME
-export JAXB_HOME=$DEVTOOLS/jwsdp/jaxb
-export GROOVY_HOME=$DEVTOOLS/groovy
-export JRUBY_HOME=$DEVTOOLS/jruby
-
-export PATH=$PATH$( [ -e $JAVA_HOME/bin ] && echo ":$JAVA_HOME/bin" || echo "")\
-$( [ -e $JAVA_HOME/bin ] && echo ":$JAVA_HOME/bin" || echo "")\
-$( [ -e $ANT_HOME/bin ] && echo ":$ANT_HOME/bin" || echo "")\
-$( [ -e $M2_HOME/bin ] && echo ":$M2_HOME/bin" || echo "")\
-$( [ -e $JRUBY_HOME/bin ] && echo ":$JRUBY_HOME/bin" || echo "")
-
-export CLASS_ROOT=$HOME/classes
-export JAR_PATH=$HOME/classes/jars
-export CLASSPATH=.
-if [ -e "${CLASS_ROOT}" ]; then
-    export CLASSPATH=.:$CLASS_ROOT
-fi
-if [ -e "${JAR_PATH}" ]; then
-    export CLASSPATH=$CLASSPATH:$(find $JAR_PATH | xargs | perl -pe 's/ /:/g')
-fi
+export CDPATH=.:..
 
 complete -o default -o nospace -F _git_checkout gci
 complete -o default -o nospace -F _git_checkout gco
