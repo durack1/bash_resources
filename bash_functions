@@ -89,7 +89,7 @@ show_welcome() {
     echo "You are logged into a ${_os} Machine...(Version `uname -r`)"
     [ "${_os}" == "Darwin" ] && sw_vers
     echo " Host => `hostname -f`"
-    [[ ! ${HOSTNAME_BANNER_OFF} ]] && show_hostname ${BANNER_FONT:-"doom"}
+    #[[ ! ${HOSTNAME_BANNER_OFF} ]] && show_hostname ${BANNER_FONT:-"doom"}
     echo
     echo " Hardware: `uname -m`...."
     echo " Using Emacs Bindings..."
@@ -346,4 +346,14 @@ mvfileset() {
 	outfile=$(eval "echo ${infile} | sed 's/${inpat}/${outpat}/'")
 	mv -v ${infile} ${outfile}
     done
+}
+
+# pushd if there's nothing on the stack or there's an arg
+# popd otherwise
+pd() {
+    if [ "$#" -ne 1 ]; then
+      popd
+    else
+      pushd $1
+    fi
 }
