@@ -137,3 +137,6 @@ ${_NOCOLOR}']> '${_CLOSE_COLOR}
 esac
 #-----------------------------
 show_welcome
+
+# added by Anaconda2 4.0.0 installer
+export PATH="/export/durack1/anaconda2/bin:$PATH"
